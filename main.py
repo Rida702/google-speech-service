@@ -70,9 +70,40 @@ async def transcribe_audio(file: UploadFile = File(...)):
         print("[DEBUG] Transcription completed")
 
         full_text = " ".join([result.alternatives[0].transcript for result in response.results])
-        print("[DEBUG] Combined transcript:", full_text[:100], "...")  # print first 100 chars
 
-        return JSONResponse({"status": "success", "transcription": full_text})
+        # Extract per-speaker data
+        result = response.results[-1]
+        words_info = result.alternatives[0].words
+
+        speakers_data = []
+        current_speaker = None
+        current_text = ""
+
+        for word_info in words_info:
+            speaker_tag = word_info.speaker_tag
+            if speaker_tag != current_speaker:
+                # Save the previous speaker's text
+                if current_speaker is not None:
+                    speakers_data.append({
+                        "speaker": f"Speaker {current_speaker}",
+                        "transcript": current_text.strip()
+                    })
+                current_speaker = speaker_tag
+                current_text = ""
+            current_text += f" {word_info.word}"
+
+        # Append last speaker
+        if current_speaker is not None:
+            speakers_data.append({
+                "speaker": f"Speaker {current_speaker}",
+                "transcript": current_text.strip()
+            })
+
+        return JSONResponse({
+            "status": "success",
+            "full_transcription": full_text,
+            "speakers": speakers_data
+        })
 
     except Exception as e:
         print("[ERROR]", str(e))
