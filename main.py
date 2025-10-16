@@ -6,7 +6,7 @@ import os
 import time
 
 # Set service account for this process
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "/Users/rida/Downloads/divisionofengineers-7efc4-7ca460e5aaaa.json"
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "/etc/google/credentials/credentials.json"
 
 GCS_BUCKET_NAME = "scribe-ai-graham"
 app = FastAPI(title="Google Medical Speech-to-Text SDK API")
